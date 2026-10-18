@@ -1,0 +1,11 @@
+model,variable,coefficient,standard_error,p_value,n,clusters,covariance
+Actual start month,log weighted village households,-0.06395347143725638,0.2051098989300796,0.7551917646082107,328,80,sublocation-clustered
+Actual start month,eligible share,-0.20692890521735224,0.9945288286007339,0.8351764371996746,328,80,sublocation-clustered
+Actual start month,high saturation,0.16786258296184453,0.28581897902670317,0.5569996648722846,328,80,sublocation-clustered
+Actual start month,Ugunja FE,4.1801938837989665,0.3036041238103339,3.939469806194995e-43,328,80,sublocation-clustered
+Actual start month,Ukwala FE,7.170904726164917,0.35871413854257167,6.651425944847447e-89,328,80,sublocation-clustered
+Actual start month (10 pct cutoff),log weighted village households,-0.046601127505367934,0.20217052815180556,0.8177001091756009,328,80,sublocation-clustered
+Actual start month (10 pct cutoff),eligible share,-0.08445758232739681,1.0165348919750972,0.9337849065095403,328,80,sublocation-clustered
+Actual start month (10 pct cutoff),high saturation,0.18488780433585383,0.28676102441731965,0.5190922964337552,328,80,sublocation-clustered
+Actual start month (10 pct cutoff),Ugunja FE,4.169789335010037,0.30145121285297755,1.6253988065000578e-43,328,80,sublocation-clustered
+Actual start month (10 pct cutoff),Ukwala FE,7.178930455317194,0.35903516460153334,6.08030098034328e-89,328,80,sublocation-clustered

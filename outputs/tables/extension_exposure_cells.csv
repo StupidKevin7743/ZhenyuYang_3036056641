@@ -1,0 +1,9 @@
+radius_km,cell,village_count
+2,direct only,1
+2,direct+indirect,327
+2,pure control,4
+2,spillover only,321
+3,direct+indirect,328
+3,spillover only,325
+4,direct+indirect,328
+4,spillover only,325

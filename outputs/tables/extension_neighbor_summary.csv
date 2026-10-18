@@ -1,0 +1,4 @@
+radius_km,villages_with_0_neighbors,mean_nearby_villages,median_nearby_villages,max_nearby_villages,villages_with_0_treated_neighbors,villages_with_1_treated_neighbor,villages_with_2_treated_neighbors,villages_with_3plus_treated_neighbors
+2,2,13.883614088820828,14.0,26,5,22,40,586
+3,0,25.52373660030628,27.0,46,0,5,6,642
+4,0,40.079632465543646,41.0,74,0,1,3,649

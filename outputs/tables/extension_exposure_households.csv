@@ -1,0 +1,17 @@
+radius_km,cell,eligible,weighted_households
+2,direct only,0,94.0
+2,direct only,1,97.0
+2,direct+indirect,0,22068.0
+2,direct+indirect,1,10958.0
+2,pure control,0,282.0
+2,pure control,1,288.0
+2,spillover only,0,21202.0
+2,spillover only,1,10394.0
+3,direct+indirect,0,22162.0
+3,direct+indirect,1,11055.0
+3,spillover only,0,21484.0
+3,spillover only,1,10682.0
+4,direct+indirect,0,22162.0
+4,direct+indirect,1,11055.0
+4,spillover only,0,21484.0
+4,spillover only,1,10682.0
