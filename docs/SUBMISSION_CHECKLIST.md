@@ -46,6 +46,6 @@ Snapshot date: 18 October 2026. Checked items were verified in the public, data-
 - [x] `python3 tools/validate_release.py` passes on the final tree.
 - [x] `python3 tools/validate_course_submission.py` passes on the final tree.
 - [x] `python3 code/run_all.py --check-only` passes in the intended submission environment.
-- [ ] GitHub Actions passes at the exact submitted commit.
+- [x] GitHub Actions passes at the exact submitted commit.
 - [ ] The repository link in the submission is an immutable tag or commit permalink.
 - [ ] The final email has been reviewed and sent manually from the student's school account.
