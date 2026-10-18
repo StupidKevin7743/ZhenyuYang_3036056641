@@ -23,7 +23,7 @@ Snapshot date: 18 October 2026. Checked items were verified in the public, data-
 
 ## Required deliverables
 
-- [ ] The submitted GitHub repository is named exactly `ZhenyuYang_3036056641`.
+- [x] The submitted GitHub repository is named exactly `ZhenyuYang_3036056641`.
 - [x] `report.pdf` exists, opens correctly, and contains the final narrative.
 - [x] `README.md` identifies the student, question, scope, command, inputs, outputs, and limitations.
 - [x] `AI_USE_DISCLOSURE.md` truthfully describes AI assistance and boundaries.
