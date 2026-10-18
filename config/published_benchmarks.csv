@@ -1,0 +1,13 @@
+panel,row,published_estimate,published_se,published_p_m_lt_0,published_p_m_lt_1,source
+Panel A,Expenditure multiplier,2.58,1.44,0.03,0.14,"Egger et al. (2022), Table V"
+Panel A,Household non-durable expenditure,1.20,1.31,0.18,,"Egger et al. (2022), Table V"
+Panel A,Household durable expenditure,0.84,0.05,0.00,,"Egger et al. (2022), Table V"
+Panel A,Enterprise investment,0.48,0.43,0.14,,"Egger et al. (2022), Table V"
+Panel A,Enterprise inventory,0.07,0.03,0.02,,"Egger et al. (2022), Table V"
+Panel B,Income multiplier,2.47,1.71,0.07,0.20,"Egger et al. (2022), Table V"
+Panel B,Enterprise profits,1.68,1.27,0.10,,"Egger et al. (2022), Table V"
+Panel B,Household wage bill,0.69,1.09,0.26,,"Egger et al. (2022), Table V"
+Panel B,Enterprise capital income,0.06,0.17,0.36,,"Egger et al. (2022), Table V"
+Panel B,Enterprise taxes paid,0.04,0.03,0.09,,"Egger et al. (2022), Table V"
+Panel C,Average of both multipliers,2.52,1.39,0.03,0.14,"Egger et al. (2022), Table V"
+Panel C,Joint test of both multipliers,,,0.01,0.07,"Egger et al. (2022), Table V"

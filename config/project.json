@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "course": "ECON6067 Quantitative Tools for Economics",
+  "project_title": "Cash Transfers, Local Multipliers, and Exposure Robustness",
+  "paper": {
+    "citation": "Egger, Haushofer, Miguel, Niehaus, and Walker (2022), General Equilibrium Effects of Cash Transfers: Experimental Evidence From Kenya",
+    "doi": "10.3982/ECTA17945",
+    "alternative_paper_approval": "pending"
+  },
+  "targets": {
+    "core": {
+      "scope": "Table V multiplier components and inference",
+      "implementation": "Accelerated Python weighted-2SLS matrix reimplementation with sublocation-cluster Rademacher signs",
+      "bootstrap_repetitions": 2000,
+      "seed": 12345,
+      "point_validation_tolerance": 0.000001,
+      "validated_max_absolute_point_difference": 0.00000017843993571631245,
+      "claim_boundary": "This is not evidence that a direct Stata 2,000-repetition run completed."
+    },
+    "extension": {
+      "scope": "Rollout-timing and nearby-treated-village exposure robustness",
+      "claim_boundary": "Aggregate design and identification diagnostics; not a treatment-outcome effect estimate."
+    }
+  },
+  "privacy": {
+    "runGPS": 0,
+    "restricted_GPS_inputs_included": false,
+    "record_level_outputs_committed": false,
+    "allowed_outputs": "Aggregate tables and figures only"
+  },
+  "submission_gates": {
+    "instructor_approval_confirmed": false,
+    "authorized_input_access_confirmed_by_repository": false,
+    "final_exact_commit_rerun_confirmed": false,
+    "submission_ready": false
+  }
+}

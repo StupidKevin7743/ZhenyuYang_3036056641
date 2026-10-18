@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "privacy": {
+    "runGPS": 0,
+    "record_level_outputs_allowed": false,
+    "restricted_coordinates_allowed": false,
+    "redistribution_note": "Inputs are local, authorized, uncommitted files. A filename containing PUBLIC does not establish redistribution permission."
+  },
+  "inputs": [
+    {
+      "key": "multiplier_data",
+      "default_path": "data/processed/HH_ENT_Multiplier_Dataset_ECMA.dta",
+      "target": "core",
+      "required": true,
+      "committed": false,
+      "sha256": "6a8bce52345c9ded6f091c8b775eb4f79a8b4b5f87bb35f9437d177e628e39d8",
+      "size_bytes": 100598787,
+      "purpose": "Prepared household-enterprise multiplier analysis file"
+    },
+    {
+      "key": "multiplier_estimates",
+      "default_path": "data/processed/multiplier_estimates.dta",
+      "target": "core",
+      "required": true,
+      "committed": false,
+      "sha256": "07ed61dcc62296c0c5b05e737e10c905d741c580f06fecb47acd27514ee1ef01",
+      "size_bytes": 38675,
+      "purpose": "Saved Stata point estimates used for numerical validation"
+    },
+    {
+      "key": "timing",
+      "default_path": "data/processed/GE_experimental_timing_long_FINAL.dta",
+      "target": "extension",
+      "required": true,
+      "committed": false,
+      "sha256": null,
+      "purpose": "Village rollout timing"
+    },
+    {
+      "key": "household",
+      "default_path": "data/processed/GE_HHLevel_ECMA.dta",
+      "target": "extension",
+      "required": true,
+      "committed": false,
+      "sha256": null,
+      "purpose": "Household weights and eligibility used only in aggregate diagnostics"
+    },
+    {
+      "key": "village",
+      "default_path": "data/processed/GE_VillageLevel_ECMA.dta",
+      "target": "extension",
+      "required": true,
+      "committed": false,
+      "sha256": null,
+      "purpose": "Village treatment status for exposure cells"
+    },
+    {
+      "key": "treatment_status",
+      "default_path": "data/raw/GE_Treat_Status_Master.dta",
+      "target": "extension",
+      "required": true,
+      "committed": false,
+      "sha256": null,
+      "purpose": "Treatment, saturation, subcounty, and clustering fields"
+    },
+    {
+      "key": "village_buffer",
+      "default_path": "data/raw/VillageBuffers_GE_HHs_1km_Increments_PUBLIC.dta",
+      "target": "extension",
+      "required": true,
+      "committed": false,
+      "sha256": null,
+      "purpose": "Public-release village-distance links used for aggregate exposure counts"
+    }
+  ]
+}
