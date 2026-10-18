@@ -2,9 +2,16 @@
 
 ## Audit objective
 
-The audit assessed whether the available code could be organized as a professional, code-only scholarly replication repository without distributing research data or restricted material. It also reviewed entry points, dependency declarations, path handling, stochastic settings, output routing, and the relationship between programs and published exhibits.
+The original audit assessed whether the available code could be organized as a
+professional, code-only scholarly replication repository without distributing
+research data or restricted material. The subsequent ECON6067 layer was also
+audited for its focused Python workflow, aggregate-output boundary, report,
+entry points, dependencies, stochastic settings, and exhibit claims.
 
-This was a static code and release-structure audit. It was not a statistical reanalysis, disclosure review of the underlying datasets, or complete clean-machine execution.
+The original 1.0.0 review was a static code and release-structure audit. The
+course layer adds a documented numerical validation of its focused targets,
+not a full independent statistical reanalysis, disclosure review of the
+underlying datasets, or complete clean-machine execution of the article.
 
 ## Audited code inventory
 
@@ -17,13 +24,21 @@ At the final release-candidate audit, the packaged code tree contained:
 - 6 project-specific Stata `.ado` files under `ado/`;
 - an R dependency lockfile and `renv` activation metadata.
 
-The script count includes the release-specific installer and preflight; the repository also contains documentation, configuration, environment metadata, and the release validator.
+The script count includes the release-specific installer and preflight. The
+current course layer additionally contains five Python programs under `code/`,
+two validators, configuration, a reusable skill, a report, and an exact
+allowlist of aggregate CSV and PNG outputs.
 
 ## Release decisions
 
-### Code only
+### Research-data exclusion and aggregate allowlist
 
-The public repository is restricted to analysis/program code, documentation, environment metadata, and empty directory placeholders. Data files, archives, raw-data construction code containing embedded record-level material, generated results, intermediate files, and execution logs are outside the release boundary.
+The original 1.0.0 release was code-only. The current course repository remains
+free of research observations, archives, restricted geography, raw-data
+construction code containing embedded record-level material, intermediate
+files, and execution logs. It now includes only the disclosure-reviewed
+aggregate tables, figures, and report enumerated by exact path in the release
+validator.
 
 ### Independent status
 
@@ -51,7 +66,7 @@ The public code setting remains `runGPS = 0`. Restricted GPS inputs are not supp
 | Dependencies | Community Stata commands are external; R packages are recorded in `renv.lock`. | Third-party Stata code is not vendored; dependency notes, an installer, and a preflight are provided. |
 | Record-specific corrections | Historical construction code embedded correction values tied to individual records. | The construction tree is withheld; any reconstruction must remain under custodian controls. |
 | Exhibit completeness | Several GIS exhibits and manually assembled items are outside the executable source tree. | `EXHIBIT_MAP.md` identifies them as manual or unavailable. |
-| Full-run evidence | The available environment did not support a complete, authorized-data clean run. | The release makes no end-to-end or exact-numerical certification claim. |
+| Full-run evidence | The focused Table V and extension workflow ran locally, while a complete clean-machine run through all article exhibits remains unavailable. | Claims are limited to the documented course targets; no full-article certification is made. |
 
 ## Reproducibility risks that remain
 
@@ -74,14 +89,19 @@ The release process includes checks for:
 - workstation-specific absolute paths;
 - the required `runGPS = 0` public setting;
 - required documentation and entry points;
-- accidental tracked content inside the data and output directories.
+- accidental tracked content inside the data directories or outside the exact aggregate-output allowlist;
 - accidental reintroduction of the excluded raw-construction tree or vendored SSC snapshot.
 
 These checks reduce accidental disclosure risk but cannot prove that arbitrary source-code comments or generated outputs contain no sensitive information. Human review remains necessary.
 
 ## Interpretation of a successful run
 
-A successful `smoke` run shows only that the tested paths executed with the supplied inputs. A successful `paper` run shows that paper-scale resampling settings were requested. Neither automatically establishes exact reproduction of the article because restricted inference, software versions, prepared-input provenance, and manual exhibits still matter.
+A successful legacy `smoke` run shows only that the tested paths executed with
+the supplied inputs. A successful course run establishes only the focused
+Table V and extension outputs checked by that workflow. Neither automatically
+establishes exact reproduction of the full article because restricted
+inference, software versions, prepared-input provenance, and manual exhibits
+still matter.
 
 Any public replication report should separate:
 

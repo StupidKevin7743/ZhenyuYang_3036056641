@@ -2,7 +2,13 @@
 
 ## 1. What this package can establish
 
-This package preserves and organizes the available Stata and R analysis code for the article. It supports code inspection, environment reconstruction, and authorized local execution from prepared analysis inputs. It does not contain the data required to reproduce estimates, and a complete clean-machine run has not been verified for this release.
+This package preserves and organizes the available Stata and R analysis code
+for the article and adds an ECON6067 course layer for Table V and a diagnostic
+extension. It supports code inspection, environment reconstruction, and
+authorized local execution from prepared analysis inputs. It does not contain
+the data required to reproduce estimates. The focused course workflow was run
+locally; a complete clean-machine run through every article exhibit has not
+been verified.
 
 Successful execution of a subset of scripts is not, by itself, proof that all published results have been reproduced. Record the software versions, input provenance, configuration, random seed, warnings, and output checksums used in any formal replication report.
 
@@ -15,7 +21,8 @@ Run commands from the repository root.
 | `rawdata/` | Authorized source inputs | Never commit data |
 | `data/` | Authorized, disclosure-reviewed analysis files | Never commit data |
 | `temp/` | Legacy-master intermediates | Never commit |
-| `outputs/` | Curated-wrapper results, logs, and section-specific `temp/` intermediates | Never commit generated content |
+| `data/raw/`, `data/processed/` | Course-runner input locations | Track README files only; never commit research observations |
+| `outputs/` | Course aggregate artifacts plus local legacy results and intermediates | Commit only the exact aggregate allowlist in `README.md`; never commit logs, draw-level files, or other generated content |
 | `do/` | Analysis and shared Stata programs | Tracked |
 | `scripts/` | Portable wrappers and setup utilities | Tracked |
 | `ado/` | Project-specific Stata helper commands | Tracked, subject to upstream rights |
@@ -82,7 +89,22 @@ Do not restore the omitted construction programs to this repository. Any future 
 
 ## 6. Choose an execution route
 
-### Route A: curated public-code workflow
+### Route 0: focused ECON6067 course workflow
+
+After placing the seven authorized inputs at the paths in
+`config/input_manifest.json`, run:
+
+```sh
+python3 code/run_all.py --target all
+```
+
+This route regenerates the focused Table V analysis, extension tables, and
+course figures. Run `python3 code/run_all.py --check-only` before and after
+execution. Regenerate `report.pdf` separately with `python3 code/build_report.py`
+when its narrative or source artifacts change. This route is separate from the
+broader legacy article workflows below.
+
+### Route A: curated legacy Stata workflow
 
 With authorized inputs in place:
 
@@ -131,7 +153,7 @@ The R entry point runs the main multiplier figure and the product-level price-ef
 - **External Stata commands:** availability and behavior can change across command versions.
 - **Historical R environment:** archived packages may not restore identically on current systems.
 - **High compute cost:** paper-scale bootstrap and randomization-inference settings can take substantial time.
-- **No end-to-end certification:** this release has not been run completely from authorized prepared analysis inputs through every available scripted exhibit on a clean machine.
+- **No full-article end-to-end certification:** the focused course workflow has local run evidence, but the package has not been run through every available article exhibit on a clean machine.
 
 ## 8. Validation protocol
 
@@ -140,7 +162,7 @@ For a defensible replication record:
 1. Record the Git commit hash.
 2. Record Stata, R, operating-system, and dependency versions.
 3. Record the source and checksums of every authorized input without publishing restricted files.
-4. Run the release validator on a clean, data-free release tree or fresh checkout before publication or pushing. It is expected to fail in a working copy that contains local inputs or generated artifacts.
+4. Run the release validator on a clean, data-free release tree or fresh checkout before publication or pushing. It permits only the exact aggregate course artifacts in its allowlist and must fail on local inputs, logs, draw-level files, or any other generated artifact.
 5. Save console exit codes and retain logs securely; do not commit logs containing sensitive output.
 6. Compare output structure, sample sizes, coefficients, standard errors, and resampling settings—not only rendered appearance.
 7. Explain every discrepancy, including the expected standard-error differences caused by `runGPS = 0`.

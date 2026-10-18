@@ -1,25 +1,20 @@
 cff-version: 1.2.0
-message: "Please cite the published article when using this replication code."
-title: "Code-only replication package for General Equilibrium Effects of Cash Transfers: Experimental Evidence From Kenya"
+message: "Please cite the published article and identify this independent ECON6067 course repository when using the package."
+title: "Cash Transfers, Local Multipliers, and Exposure Robustness"
 type: software
-version: "1.0.0"
-date-released: "2026-09-30"
+version: "2.0.0"
+date-released: "2026-10-18"
 abstract: >-
-  An independent, privacy-screened organization of the Stata and R code
-  distributed with the publisher's supporting information. No research data
-  or restricted GPS inputs are included.
+  An independent ECON6067 course replication and extension built on a
+  privacy-screened organization of Stata and R code distributed with the
+  publisher's supporting information. The course layer focuses on Table V,
+  adds rollout and exposure-support diagnostics, and includes only
+  disclosure-reviewed aggregate outputs. No research microdata or restricted
+  GPS inputs are included.
 authors:
-  - family-names: Egger
-    given-names: Dennis
-  - family-names: Haushofer
-    given-names: Johannes
-  - family-names: Miguel
-    given-names: Edward
-  - family-names: Niehaus
-    given-names: Paul
-  - family-names: Walker
-    given-names: Michael
-repository-code: "https://github.com/StupidKevin7743/cash-transfer-ge-replication"
+  - family-names: Yang
+    given-names: Zhenyu
+repository-code: "https://github.com/StupidKevin7743/ZhenyuYang_3036056641"
 keywords:
   - cash transfers
   - general equilibrium
@@ -28,6 +23,7 @@ keywords:
   - replication
   - Stata
   - R
+  - Python
 preferred-citation:
   type: article
   title: "General Equilibrium Effects of Cash Transfers: Experimental Evidence From Kenya"
