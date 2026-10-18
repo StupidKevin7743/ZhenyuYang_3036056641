@@ -752,70 +752,10 @@ def atomic_csv(frame: pd.DataFrame, path: Path) -> None:
 
 
 def render_comparison_figure(comparison: pd.DataFrame, path: Path, reps: int, seed: int) -> None:
-    plot = comparison.loc[comparison["published_estimate"].notna()].copy()
-    label_map = {
-        "Expenditure multiplier": "Expenditure multiplier",
-        "Household non-durable expenditure": "Nondurable expenditure",
-        "Household durable expenditure": "Durable expenditure",
-        "Enterprise investment": "Enterprise investment",
-        "Enterprise inventory": "Enterprise inventory",
-        "Income multiplier": "Income multiplier",
-        "Enterprise profits": "Enterprise profits",
-        "Household wage bill": "Household wage bill",
-        "Enterprise capital income": "Enterprise capital income",
-        "Enterprise taxes paid": "Enterprise taxes",
-        "Average of both multipliers": "Average multiplier",
-    }
-    plot["label"] = plot["row"].map(label_map)
-    plot = plot.iloc[::-1].reset_index(drop=True)
-    y = np.arange(len(plot), dtype=float)
-    published = plot["published_estimate"].to_numpy(float)
-    reproduced = plot["replicated_estimate"].to_numpy(float)
-    published_se = plot["published_se"].to_numpy(float)
-    reproduced_se = plot["replicated_se"].to_numpy(float)
+    """Use the same print-ready renderer as the aggregate-only figure command."""
+    from render_figures import render_table5_comparison
 
-    fig, ax = plt.subplots(figsize=(9.2, 6.0))
-    ax.errorbar(
-        published,
-        y + 0.12,
-        xerr=published_se,
-        fmt="o",
-        color="#7b8794",
-        ecolor="#b8c2cc",
-        capsize=2,
-        label="Published Table V",
-    )
-    ax.errorbar(
-        reproduced,
-        y - 0.12,
-        xerr=reproduced_se,
-        fmt="o",
-        color="#17324d",
-        ecolor="#4c82ad",
-        capsize=2,
-        label=f"{reps:,}-draw reimplementation",
-    )
-    ax.axvline(0, color="#8795a1", linewidth=0.8)
-    ax.set_yticks(y, plot["label"])
-    ax.set_xlabel("Multiplier component estimate (± one standard error)")
-    ax.set_title("Table V point estimates and uncertainty closely track the paper", loc="left", weight="bold")
-    ax.grid(axis="x", color="#d9e2ec", linewidth=0.8)
-    ax.set_axisbelow(True)
-    ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.12), ncol=2)
-    ax.text(
-        0,
-        -0.26,
-        f"Weighted 2SLS; sublocation-cluster Rademacher bootstrap; {reps:,} draws; seed {seed}; runGPS=0.",
-        transform=ax.transAxes,
-        fontsize=8,
-    )
-    fig.tight_layout()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile(suffix=".png", dir=path.parent, delete=False) as handle:
-        temporary = Path(handle.name)
-    fig.savefig(temporary, dpi=180, bbox_inches="tight")
-    plt.close(fig)
-    temporary.replace(path)
+    render_table5_comparison(comparison, path, f"{reps:,}-draw reimplementation")
 
 
 @dataclass(frozen=True)

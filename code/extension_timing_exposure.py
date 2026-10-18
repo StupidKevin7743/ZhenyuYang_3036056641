@@ -286,35 +286,99 @@ def compute_exposure_tables(
 
 
 def write_exposure_figure(cells: pd.DataFrame, output_path: Path) -> None:
-    """Create a compact stacked-bar PNG without exposing any identifiers."""
+    """Create a print-legible aggregate chart without exposing identifiers."""
     try:
         import matplotlib.pyplot as plt
     except ImportError as error:  # pragma: no cover - environment-specific message
         raise RuntimeError("matplotlib is required to render the extension figure") from error
 
     palette = {
-        "direct only": "#d39b3d",
-        "direct+indirect": "#17324d",
-        "pure control": "#75a478",
-        "spillover only": "#4c82ad",
+        "direct only": "white",
+        "direct+indirect": "0.25",
+        "pure control": "white",
+        "spillover only": "0.85",
+    }
+    hatches = {
+        "direct only": "xx",
+        "direct+indirect": "",
+        "pure control": "..",
+        "spillover only": "//",
+    }
+    labels = {
+        "direct only": "Treated village / no treated neighbor",
+        "direct+indirect": "Treated village / with treated neighbor",
+        "pure control": "Control village / no treated neighbor",
+        "spillover only": "Control village / with treated neighbor",
     }
     radii = list(RADII_KM)
-    figure, axis = plt.subplots(figsize=(7.4, 4.5))
+    figure, axis = plt.subplots(figsize=(9.2, 6.2))
     bottoms = np.zeros(len(radii), dtype=float)
+    counts = {}
     for cell in CELL_ORDER:
         values = []
         for radius in radii:
             match = cells[(cells["radius_km"] == radius) & (cells["cell"] == cell)]
             values.append(int(match["village_count"].iloc[0]) if not match.empty else 0)
-        axis.bar([str(value) for value in radii], values, bottom=bottoms, label=cell, color=palette[cell])
+        counts[cell] = values
+        axis.bar(
+            [str(value) for value in radii],
+            values,
+            bottom=bottoms,
+            width=0.60,
+            label=labels[cell],
+            color=palette[cell],
+            edgecolor="0.25",
+            linewidth=0.6,
+            hatch=hatches[cell],
+        )
+        for index, value in enumerate(values):
+            # Thin cells retain their true height; their exact counts appear below.
+            if value >= 30:
+                axis.text(
+                    index,
+                    bottoms[index] + value / 2,
+                    str(value),
+                    ha="center",
+                    va="center",
+                    fontsize=11,
+                    weight="bold",
+                    color="white" if cell == "direct+indirect" else "black",
+                    bbox={"facecolor": palette[cell], "edgecolor": "none", "pad": 3},
+                )
         bottoms += np.asarray(values, dtype=float)
-    axis.set_title("Nearby-treatment exposure cells become thin quickly", loc="left", weight="bold")
-    axis.set_xlabel("Radius (km)")
-    axis.set_ylabel("Villages")
-    axis.grid(axis="y", color="#d9e2ec", linewidth=0.8)
+    for index, total in enumerate(bottoms):
+        axis.text(index, total + 13, f"Total: {int(total)}", ha="center", fontsize=10)
+    axis.set_title("Villages with and without a treated neighbor", loc="left", weight="bold", pad=14)
+    axis.set_xlabel("Neighbor radius (km)", labelpad=8)
+    axis.set_ylabel("Number of villages")
+    axis.set_ylim(0, float(bottoms.max()) * 1.10)
+    axis.grid(axis="y", color="0.88", linewidth=0.7)
     axis.set_axisbelow(True)
-    axis.legend(frameon=False, fontsize=8, loc="upper left")
-    figure.tight_layout()
+    axis.spines[["top", "right"]].set_visible(False)
+    figure.legend(
+        frameon=False,
+        fontsize=9,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 0.105),
+        ncol=2,
+        columnspacing=2.0,
+        handlelength=2.2,
+        labelspacing=0.8,
+    )
+    small_cell_note = "; ".join(
+        f"{radius} km: {counts['direct only'][index]} treated, {counts['pure control'][index]} control"
+        for index, radius in enumerate(radii)
+    )
+    figure.text(
+        0.5,
+        0.035,
+        "Villages with no treated neighbor (thin or empty cells):\n" + small_cell_note + ".",
+        ha="center",
+        va="bottom",
+        fontsize=9,
+        linespacing=1.5,
+    )
+    figure.tight_layout(rect=(0, 0.24, 1, 1))
     figure.savefig(output_path, dpi=220, facecolor="white")
     plt.close(figure)
 

@@ -14,7 +14,10 @@ OpenAI Codex was used on 18 October 2026 as a repository and writing assistant. 
 2. auditing file organization, documented dependencies, privacy controls, reproducibility claims, and gaps against the course format;
 3. drafting the course-facing README, contribution statement, submission checklist, and continuous-integration checks;
 4. helping design, implement, and test Python code for the Table V reimplementation, the rollout/exposure extension, the one-command runner, validation, figures, and report assembly; and
-5. checking documentation, configuration, and aggregate output consistency.
+5. checking documentation, configuration, and aggregate output consistency; and
+6. revising the report into plain language, correcting the timing and bootstrap
+   explanations, converting its figures and layout to monochrome, and inspecting
+   the rendered pages. This editorial revision did not change the numerical CSVs.
 
 AI-generated text and code are not treated as evidence. Zhenyu Yang remains responsible for reviewing every change, running the final workflow with authorized inputs, checking every reported number against machine-generated outputs, interpreting the economics, and deciding what to submit.
 

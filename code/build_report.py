@@ -28,16 +28,16 @@ TABLE_DIR = REPO_ROOT / "outputs" / "tables"
 FIGURE_DIR = REPO_ROOT / "outputs" / "figures"
 OUTPUT_PATH = REPO_ROOT / "report.pdf"
 
-NAVY = colors.HexColor("#17324D")
-BLUE = colors.HexColor("#3D7199")
-SKY = colors.HexColor("#EAF2F8")
-INK = colors.HexColor("#1F2933")
-MUTED = colors.HexColor("#5E6D7A")
-LIGHT = colors.HexColor("#F6F8FA")
-BORDER = colors.HexColor("#D9E2EC")
-GOLD = colors.HexColor("#B98228")
-GREEN = colors.HexColor("#4E7D5A")
-RED = colors.HexColor("#A44A3F")
+# Neutral tones throughout so the report remains clear when printed in black and white.
+NAVY = colors.black
+BLUE = colors.black
+SKY = colors.HexColor("#F3F3F3")
+INK = colors.black
+MUTED = colors.HexColor("#444444")
+LIGHT = colors.HexColor("#F5F5F5")
+BORDER = colors.HexColor("#BBBBBB")
+GOLD = colors.HexColor("#777777")
+RED = colors.black
 
 
 def read_csv(name: str) -> list[dict[str, str]]:
@@ -119,7 +119,7 @@ def styles() -> dict[str, ParagraphStyle]:
             borderPadding=9,
             backColor=SKY,
             spaceBefore=13,
-            spaceAfter=10,
+            spaceAfter=20,
         ),
         "warning": ParagraphStyle(
             "Warning",
@@ -131,7 +131,7 @@ def styles() -> dict[str, ParagraphStyle]:
             borderColor=GOLD,
             borderWidth=1,
             borderPadding=9,
-            backColor=colors.HexColor("#FFF8E8"),
+            backColor=colors.white,
             spaceAfter=10,
         ),
         "caption": ParagraphStyle(
@@ -165,6 +165,16 @@ def bullet(text: str, style: ParagraphStyle) -> Paragraph:
     return Paragraph(f"<bullet>&bull;</bullet>{text}", style)
 
 
+def report_figure(name: str, width: float = 6.85 * inch) -> Image:
+    """Preserve the chart's aspect ratio, including its external legend."""
+    chart = Image(str(FIGURE_DIR / name))
+    # Force lazy image-size loading before setting drawing dimensions.
+    aspect_ratio = chart.imageHeight / chart.imageWidth
+    chart.drawWidth = width
+    chart.drawHeight = width * aspect_ratio
+    return chart
+
+
 def course_table(
     rows: list[list[object]],
     widths: list[float],
@@ -184,7 +194,7 @@ def course_table(
         fontName="Helvetica-Bold",
         fontSize=font_size,
         leading=font_size + 2,
-        textColor=colors.white,
+        textColor=colors.black,
     )
     converted = []
     for row_index, row in enumerate(rows):
@@ -197,8 +207,8 @@ def course_table(
         )
     table = Table(converted, colWidths=widths, repeatRows=header_rows, hAlign="LEFT")
     commands = [
-        ("BACKGROUND", (0, 0), (-1, header_rows - 1), NAVY),
-        ("TEXTCOLOR", (0, 0), (-1, header_rows - 1), colors.white),
+        ("BACKGROUND", (0, 0), (-1, header_rows - 1), colors.HexColor("#E5E5E5")),
+        ("TEXTCOLOR", (0, 0), (-1, header_rows - 1), colors.black),
         ("FONTNAME", (0, 0), (-1, header_rows - 1), "Helvetica-Bold"),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("GRID", (0, 0), (-1, -1), 0.35, BORDER),
@@ -246,7 +256,7 @@ def build_story() -> list[object]:
             p("Cash Transfers and Local General Equilibrium", s["title"]),
             p(
                 "Replication of Egger et al. (2022) Table V, "
-                "with a rollout-timing and exposure-network robustness extension",
+                "with an extension on payment timing and nearby treated villages",
                 s["subtitle"],
             ),
             Spacer(1, 0.35 * inch),
@@ -270,17 +280,16 @@ def build_story() -> list[object]:
             ),
             Spacer(1, 0.45 * inch),
             p(
-                "APPROVAL STATUS: Egger et al. is an alternative paper outside the four "
-                "illustrative options in the project brief. Instructor approval and target "
-                "confirmation are requested in the accompanying unsent email draft; approval "
-                "has not been assumed in this report.",
+                "Paper approval pending. Egger et al. is outside the four illustrative "
+                "options in the project brief. Instructor approval is still required for "
+                "this paper and the proposed replication scope.",
                 s["warning"],
             ),
             Spacer(1, 0.18 * inch),
             p(
-                "Reproducibility statement: the repository contains code, disclosure-reviewed "
-                "aggregate outputs, access instructions, an AI-use record, and one public entry "
-                "point. It contains no microdata, household identifiers, coordinates, or restricted GPS inputs.",
+                "The repository includes the code, summary results, data-access instructions, "
+                "and an AI-use disclosure. The research datasets and restricted coordinates "
+                "must be obtained separately from an authorized source.",
                 s["callout"],
             ),
             PageBreak(),
@@ -289,42 +298,46 @@ def build_story() -> list[object]:
 
     story.extend(
         [
-            p("1. Executive summary", s["h1"]),
+            p("1. Main findings", s["h1"]),
             p(
-                "Egger et al. (2022) study a one-time cash-transfer program that paid about "
-                "USD 1,000 nominal to more than 10,500 poor households in 653 randomized Kenyan "
-                "villages. Because the transfer shock exceeded 15% of local GDP, the experiment "
-                "can measure both direct recipient spending and indirect local spillovers. The "
-                "paper's central result is a local transfer multiplier of roughly 2.5 with little "
-                "aggregate price inflation.",
+                "Does giving cash to poor households also raise incomes elsewhere in the local "
+                "economy? Egger et al. (2022) study a one-time program that gave about USD 1,000 "
+                "to each of more than 10,500 households in rural Kenya. Treatment was randomized "
+                "across a study area of 653 villages. The paper reports that each dollar transferred "
+                "generated about USD 2.50 of additional local economic activity, with little "
+                "price inflation. This project checks the multiplier estimates in Table V; it "
+                "does not independently re-estimate the paper's price effects.",
                 s["body"],
             ),
             p(
-                "This project targets Table V. It reproduces the published dynamic-IV "
-                "point estimates and validates a matrix-based Python implementation against Stata "
-                "to within 1.8e-7. It then performs 2,000 Rademacher wild-cluster draws at the "
-                "sublocation level. The reimplemented expenditure multiplier is 2.5767 "
-                "(SE 1.4575), the income multiplier is 2.4691 (SE 1.7874), and their average is "
-                "2.5229 (SE 1.4278). These closely track the printed estimates 2.58, 2.47, and 2.52.",
+                "The replication gives an expenditure multiplier of <b>2.58</b> and an income "
+                "multiplier of <b>2.47</b>, matching the paper after rounding. Their average is "
+                "<b>2.52</b>. Across all 11 table quantities, the largest difference between the "
+                "Python and saved Stata estimates is less than 0.0000002. A completed 2,000-draw "
+                "Python bootstrap gives similar, though slightly larger, standard errors. The "
+                "estimates support a positive local response, but the evidence that the multiplier "
+                "exceeds one is weaker.",
                 s["body"],
             ),
             p(
-                "The independent extension asks whether rollout timing and the nearby-treatment "
-                "network create systematic selection or very thin comparison cells. Conditional "
-                "on subcounty fixed effects, timing is not detectably related to village size, "
-                "eligibility share, or saturation assignment. Yet at a 2 km radius there is only "
-                "one direct-only village and four pure-control villages; those categories disappear "
-                "at 3 km and 4 km. This is an identification diagnostic, not a new treatment-effect estimate.",
+                "The extension checks two practical questions: did some types of village start "
+                "receiving payments earlier, and are there enough villages without nearby treatment "
+                "to make simple comparisons? Within subcounties, the timing regression detects no "
+                "clear association with the three measured village characteristics. At 2 km, "
+                "however, only <b>five of 653 villages</b> have no treated neighbor; at 3 km and "
+                "4 km, none do. Simple comparisons of four treatment/exposure groups would therefore "
+                "rely on very small or empty groups.",
                 s["body"],
             ),
-            p("What the project establishes", s["h2"]),
-            bullet("Core Table V point estimates and presentation are reproduced.", s["body"]),
-            bullet("The completed 2,000-draw accelerator closely reconciles published uncertainty and p-values.", s["body"]),
-            bullet("The extension makes rollout phases and exposure-cell support auditable.", s["body"]),
-            p("What the project does not establish", s["h2"]),
-            bullet("It is not a full-paper, paper-identical end-to-end replication.", s["body"]),
-            bullet("It does not reproduce the restricted-coordinate spatial-HAC implementation.", s["body"]),
-            bullet("The direct Stata 2,000-repetition loop did not finish; the final inference is the validated Python accelerator.", s["body"]),
+            p("Scope and evidence", s["h2"]),
+            bullet("Core: Table V estimates, their components, and a comparison of bootstrap uncertainty.", s["body"]),
+            bullet("Extension: descriptive checks of payment timing and village exposure groups.", s["body"]),
+            bullet("Implementation: completed Python computation checked against Stata point estimates; the direct 2,000-draw Stata run remained incomplete.", s["body"]),
+            p(
+                "These findings concern the selected table and extension. They do not certify "
+                "every result in the article or establish a new causal effect from the extension.",
+                s["callout"],
+            ),
             PageBreak(),
         ]
     )
@@ -333,49 +346,48 @@ def build_story() -> list[object]:
         [
             p("2. Research question and economic mechanism", s["h1"]),
             p(
-                "The paper asks whether a large, externally financed cash transfer raises only the "
-                "recipient household's expenditure or also expands local production and income. A "
-                "purely partial-equilibrium view predicts direct consumption gains. A local "
-                "general-equilibrium view adds demand spillovers: recipients buy local goods and "
-                "services, firms respond through sales, inventories, investment, profits, wages, "
-                "and taxes, and nonrecipients receive part of the resulting income flow.",
+                "When a household receives cash, it may buy food from a local shop, pay a builder, "
+                "or purchase farm inputs. Those sellers earn income and may spend some of it locally. "
+                "People who never received a transfer can therefore benefit too. The research "
+                "question is how much additional spending and income this process creates across "
+                "the study area. These wider effects are what the paper calls local "
+                "general-equilibrium effects.",
                 s["body"],
             ),
             p(
-                "The multiplier divides the integrated local expenditure or income response by the "
-                "transfer amount. Values greater than one are possible when one household's spending "
-                "becomes another household's or firm's income and is spent again. Whether this occurs "
-                "without large inflation depends on local supply elasticities, unused capacity, trade, "
-                "and leakage outside the study area.",
+                "The <b>transfer multiplier</b> is the extra local economic activity divided by the "
+                "cash transferred. A value of 2.5 means that USD 100 transferred is associated with "
+                "an estimated USD 250 increase in activity over the measured period. It does not mean "
+                "that each recipient receives another USD 250 in cash. The estimate covers recipients, "
+                "other households, and firms, using the paper's expenditure or income accounting.",
                 s["body"],
             ),
             p("Why Table V", s["h2"]),
             p(
-                "Table V aggregates the paper's dynamic expenditure and income responses into the "
-                "headline multipliers and decomposes them into economically interpretable components. "
-                "The paper's Figure 1 provides the quarterly-path context, but this course package does "
-                "not claim to regenerate that exhibit. The selected table connects the research question, "
-                "identification strategy, dynamics, and main conclusion more directly than a descriptive "
-                "balance table would.",
+                "Table V brings the results together in two ways: it adds extra household spending "
+                "and business investment, and it separately adds extra wages, profits, capital income, "
+                "and taxes. These are two measures of the same broad response, so they should not be "
+                "added together. Their average is a third summary. The paper's Figure 1 shows the "
+                "quarterly paths; this project reproduces Table V and uses Figure 1 only as context.",
                 s["body"],
             ),
-            p("Predictions assessed", s["h2"]),
+            p("Why the size of the effect is uncertain", s["h2"]),
             course_table(
                 [
-                    ["Prediction", "Observable implication"],
-                    ["Local demand propagates", "Expenditure and income multipliers exceed zero and may exceed one."],
-                    ["Supply responds", "Enterprise profits, investment, inventories, wages, and taxes rise."],
-                    ["Effects unfold over time", "Impulse responses persist across quarterly lags rather than appearing in one period."],
-                    ["Design support matters", "Rollout and exposure cells provide credible variation for own and nearby transfers."],
+                    ["Economic channel", "What it means for the multiplier"],
+                    ["Spending circulates locally", "A shopkeeper or worker can spend new income again, spreading gains beyond recipients."],
+                    ["Firms can produce more", "Unused capacity can allow higher sales and output without equally large price increases."],
+                    ["Purchases leave the area", "Imports and spending elsewhere can reduce the local response."],
+                    ["The response takes time", "Adding effects across 29 months captures more than a single survey-date comparison."],
                 ],
                 [2.15 * inch, 4.65 * inch],
                 font_size=8.2,
             ),
             Spacer(1, 0.12 * inch),
             p(
-                "The extension focuses on the fourth prediction. It does not redefine the paper's "
-                "estimand; it tests whether the timing and simplified exposure geometry reveal support "
-                "problems that should qualify interpretation.",
+                "The extension asks whether the data provide useful comparisons for studying these "
+                "effects. A village receiving no cash may still have treated neighbors, so it is "
+                "not automatically an unaffected comparison village.",
                 s["callout"],
             ),
             PageBreak(),
@@ -386,39 +398,44 @@ def build_story() -> list[object]:
         [
             p("3. Data, sample, and experimental design", s["h1"]),
             p(
-                "The experiment covers 653 villages in 84 sublocations: 328 treated and 325 control. "
-                "Randomization is hierarchical. Sublocations were assigned to high- or low-saturation "
-                "groups, and villages within them were treated at different probabilities. Eligible "
-                "households in treated villages received KES 87,000 in three payments: KES 7,000, "
-                "then KES 40,000 about two months later, then KES 40,000 about six months later.",
+                "The study includes 653 villages in 84 sublocations, with 328 villages assigned "
+                "to treatment and 325 to control. Randomization occurred in two stages. First, "
+                "sublocations or groups of sublocations were assigned to 33 high-saturation and "
+                "35 low-saturation groups. Then two-thirds of villages in the high groups and "
+                "one-third in the low groups were assigned to treatment. This created random "
+                "variation in both a village's own treatment and treatment nearby.",
                 s["body"],
             ),
             p(
-                "The household census contains 65,383 households (about 280,000 people). Baseline "
-                "surveys cover 7,845 households and endline surveys 8,239, with tracking above 90%. "
-                "Endline occurred a median 19 months after experimental start and about 11 months "
-                "after the final transfer. Enterprise and market data supply the remaining multiplier components.",
+                "Households living under thatched roofs were eligible. In treated villages, eligible "
+                "households received KES 87,000: KES 7,000 initially, KES 40,000 two months later, "
+                "and KES 40,000 eight months after the first payment. The census covers 65,383 "
+                "households. Baseline and endline surveys cover 7,845 and 8,239 households; these "
+                "are study-wide survey counts, not the sample size of every Table V regression. "
+                "The median endline interview was 19 months after experimental start. Enterprise "
+                "and market surveys supply business and price measures.",
                 s["body"],
             ),
             p("Inputs used by this package", s["h2"]),
             course_table(
                 [
                     ["Logical input", "Role", "Public-repository treatment"],
-                    ["HH/enterprise multiplier analysis file", "Dynamic-IV components for Table V", "Access instructions only; never committed"],
+                    ["Household/enterprise multiplier file", "Spending and income components for Table V", "Access instructions only; never committed"],
                     ["Stata multiplier estimate file", "Point-estimate cross-check", "Generated/authorized local input; never committed"],
                     ["Experimental timing panel", "Actual rollout month", "Access instructions only; never committed"],
-                    ["Household/village analysis files", "Village size, eligibility, treatment", "Access instructions only; never committed"],
+                    ["Household/village analysis files", "Endline-weighted size proxy, eligibility, treatment", "Access instructions only; never committed"],
                     ["Provider-supplied village-buffer file", "Counts of nearby treated villages", "No coordinates committed; input remains untracked"],
                 ],
                 [1.7 * inch, 2.4 * inch, 2.7 * inch],
                 font_size=7.4,
             ),
-            p("Disclosure boundary", s["h2"]),
+            p("Data access and scope", s["h2"]),
             p(
-                "Only aggregate CSV tables and two figures are versioned. The repository's release "
-                "auditor uses an exact output allowlist and rejects Stata data, coordinates, archives, "
-                "logs, identifiers, machine-local paths, unexpected result files, and credentials. "
-                "Legacy public execution fixes <b>runGPS = 0</b>; no claim is made about restricted GPS analysis.",
+                "The repository distributes summary tables, figures, and this report; it does not "
+                "distribute research observations or coordinates. The input manifest lists the seven "
+                "required files. The project starts from prepared analysis files, because the "
+                "earlier raw-data construction code contains record-specific material and is excluded. "
+                "Restricted-GPS analyses elsewhere in the paper remain outside this project's scope.",
                 s["body"],
             ),
             PageBreak(),
@@ -429,47 +446,56 @@ def build_story() -> list[object]:
         [
             p("4. Identification and replication method", s["h1"]),
             p(
-                "The paper's dynamic IV specification relates quarterly outcomes to own-village and "
-                "nearby-village cumulative transfer amounts within 0-2 km across ten quarterly lags. "
-                "Random assignment of village treatment, saturation, and rollout timing instruments "
-                "for realized transfer exposure. Flow responses are integrated over 29 months; stock "
-                "outcomes are measured at endline. Values are expressed in January 2015 terms.",
+                "A simple comparison of recipients and nonrecipients would miss gains reaching "
+                "nearby households and firms. Equation (7) in the paper therefore relates each "
+                "outcome to transfers paid in the village and within 2 km of it, in the current "
+                "quarter and each of the previous nine quarters. The explanatory variables are "
+                "quarter-specific transfer amounts, not cumulative transfers to date.",
+                s["body"],
+            ),
+            p(
+                "The instrumental-variables (IV) design uses randomized assignment and rollout "
+                "to isolate transfer variation that is not chosen in response to local outcomes. "
+                "The paper then adds the estimated spending and income responses over 29 months. "
+                "Durable assets and inventories are measured as stocks at endline. Prices and "
+                "transfers are converted to January 2015 values, so the calculation is in real terms.",
                 s["body"],
             ),
             p("Core workflow", s["h2"]),
             course_table(
                 [
                     ["Stage", "Implementation", "Validation"],
-                    ["1. Point estimates", "Reconstruct the Table V dynamic-IV component vector", "Compare 11 quantities with Stata"],
-                    ["2. Resampling", "2,000 Rademacher wild-cluster draws by sublocation", "Check exact draw count and fixed seed"],
-                    ["3. Aggregation", "Form expenditure, income, average, and joint tests", "Compare printed precision with Table V"],
-                    ["4. Presentation", "Write aggregate CSVs and render figures", "Schema/privacy audit plus visual review"],
+                    ["1. Estimate", "Compute each spending and income component in Python", "Compare 11 quantities with saved Stata estimates"],
+                    ["2. Measure uncertainty", "Run 2,000 wild-cluster bootstrap draws", "Use seed 12345 and common signs within sublocations"],
+                    ["3. Compare", "Calculate totals, averages, and bootstrap tail frequencies", "Show differences from published Table V"],
+                    ["4. Present", "Generate summary tables and figures directly from code", "Check numbers and inspect rendered pages"],
                 ],
                 [1.3 * inch, 3.0 * inch, 2.5 * inch],
                 font_size=7.7,
             ),
             p("Inference", s["h2"]),
             p(
-                "For each wild-bootstrap draw, sublocation-level Rademacher weights perturb the null "
-                "residual structure. The empirical distribution yields bootstrap standard errors and "
-                "one-sided probabilities Pr(M &lt; 0) and Pr(M &lt; 1). This matches the paper's stated "
-                "2,000 within-sublocation replication logic. The Python code is a matrix accelerator, "
-                "not a claim that the original Stata loop completed.",
+                "The wild-cluster bootstrap repeats the calculation after multiplying regression "
+                "residuals by random +1 or -1 signs, using the same sign for observations in a "
+                "sublocation. Each artificial outcome combines the fitted value with the signed "
+                "residual. The spread across 2,000 draws gives the bootstrap standard error. "
+                "Following the supplied code, the reported one-sided quantities are the shares of "
+                "draws below zero or one. They are not probabilities that a hypothesis is true.",
                 s["body"],
             ),
-            p("Pre-specified comparison rule", s["h2"]),
+            p("Numerical comparison rule", s["h2"]),
             p(
-                "A point estimate passes if the Python-Stata absolute difference is below 1e-6. A "
-                "printed benchmark is treated as reconciled when the reimplemented value agrees at "
-                "the paper's reported precision or its small deviation is reported explicitly. No "
-                "manual edits are made to canonical output numbers.",
+                "The point-estimate tolerance is 0.000001. Matching those estimates checks the "
+                "coefficient calculations; it does not prove that the whole bootstrap is identical "
+                "to Stata. Standard errors and tail frequencies are therefore compared separately "
+                "with the paper, and the differences remain visible in the results.",
                 s["callout"],
             ),
             p("Why not use the earlier three-draw result?", s["h2"]),
             p(
-                "The earlier Stata smoke run reproduces point estimates but produces p-values only in "
-                "increments of one third and unstable standard errors. It is retained as pipeline "
-                "evidence only and excluded from the canonical course outputs.",
+                "Three draws can produce only very coarse tail frequencies and unstable standard "
+                "errors. The earlier run shows that the code executed, but it is unsuitable for "
+                "final inference. This report uses the completed 2,000-draw Python results.",
                 s["body"],
             ),
             PageBreak(),
@@ -477,7 +503,7 @@ def build_story() -> list[object]:
     )
 
     key_rows = {row["row"]: row for row in comparison}
-    full_table_rows: list[list[object]] = [["Component", "Paper", "Reimpl.", "Paper SE", "Reimpl. SE", "p<0", "p<1"]]
+    full_table_rows: list[list[object]] = [["Component", "Paper", "Python", "Paper SE", "Python SE", "Below 0", "Below 1"]]
     for label in (
         "Expenditure multiplier",
         "Household non-durable expenditure",
@@ -499,39 +525,41 @@ def build_story() -> list[object]:
                 f"{float(row['replicated_estimate']):.2f}",
                 f"{float(row['published_se']):.2f}",
                 f"{float(row['replicated_se']):.2f}",
-                f"{float(row['replicated_p_m_lt_0']):.3f}",
-                f"{float(row['replicated_p_m_lt_1']):.3f}" if row["replicated_p_m_lt_1"] else "-",
+                f"{float(row['replicated_p_m_lt_0']):.4f}",
+                f"{float(row['replicated_p_m_lt_1']):.4f}" if row["replicated_p_m_lt_1"] else "-",
             ]
         )
     story.extend(
         [
             p("5. Core replication results", s["h1"]),
             p(
-                "The core point estimates match the paper at printed precision. The expenditure "
-                "multiplier is 2.5767; the income multiplier is 2.4691; their average is 2.5229. "
-                "The 2,000-draw standard errors are slightly larger than the published values by "
-                "0.018, 0.077, and 0.038, respectively. The reimplemented one-sided p-values remain "
-                "close to those printed in Table V.",
+                "All 11 point estimates match the paper to two decimal places. The expenditure "
+                "multiplier is 2.5767, income is 2.4691, and their average is 2.5229. Their "
+                "bootstrap standard errors are 1.4575, 1.7874, and 1.4278, respectively: slightly "
+                "larger than the paper's 1.44, 1.71, and 1.39. Thus, the central estimates are very "
+                "close, while the uncertainty estimates are similar rather than identical.",
                 s["body"],
             ),
             course_table(
                 full_table_rows,
-                [2.12 * inch, 0.56 * inch, 0.62 * inch, 0.64 * inch, 0.69 * inch, 0.55 * inch, 0.55 * inch],
-                font_size=6.65,
+                [2.12 * inch, 0.65 * inch, 0.65 * inch, 0.75 * inch, 0.75 * inch, 0.94 * inch, 0.94 * inch],
+                font_size=7.8,
             ),
             p(
-                "Table 1. Published versus reimplemented Table V. p&lt;0 and p&lt;1 are the "
-                "reimplemented one-sided wild-bootstrap probabilities. A dash means the paper did "
-                "not report that component-level test.",
+                "Table 1. Published Table V and Python results. SE = bootstrap standard error. "
+                "The last two columns are the fractions of bootstrap draws below 0 and 1, using "
+                "the supplied code's convention. A dash indicates an unreported component-level "
+                "test. A displayed 0.0000 means no draw fell below the threshold, not zero true probability.",
                 s["caption"],
             ),
             p("Interpretation", s["h2"]),
             p(
-                "The expenditure multiplier is significantly above zero at conventional one-sided "
-                "levels but not significantly above one (Pr[M&lt;1] = 0.1455). Income has Pr(M&lt;0) = "
-                "0.0860 and Pr(M&lt;1) = 0.2105. The joint probabilities for expenditure and income "
-                "are 0.0130 against zero and 0.0785 against one. The evidence supports a positive "
-                "local response; it is more cautious about claiming a multiplier definitively above one.",
+                "The point estimates are economically large, but they are imprecise. For expenditure, "
+                "3.05% of bootstrap draws fall below zero and 14.55% below one; for income, the "
+                "corresponding shares are 8.60% and 21.05%. The shares in which <b>both</b> "
+                "multipliers fall below the threshold are 1.30% for zero and 7.85% for one. These "
+                "are the code's joint-tail measures. Under the paper's reporting convention, the "
+                "evidence for a positive response is stronger than the evidence for a multiplier above one.",
                 s["body"],
             ),
             PageBreak(),
@@ -540,27 +568,30 @@ def build_story() -> list[object]:
 
     story.extend(
         [
-            p("6. Visual comparison and numerical validation", s["h1"]),
-            Image(str(FIGURE_DIR / "table5_multiplier_comparison.png"), width=6.95 * inch, height=4.54 * inch),
+            p("6. How closely do the results match?", s["h1"]),
+            report_figure("table5_multiplier_comparison.png"),
             p(
-                "Report Figure 1. Published and reimplemented Table V point estimates, with plus/minus one "
-                "standard error. The two series nearly overlap. Error bars are descriptive rather than 95% intervals.",
+                "Report Figure 1. Published and Python Table V estimates. Each horizontal line extends "
+                "one standard error either side of its point estimate; these are not 95% confidence "
+                "intervals. Marker shapes distinguish the series in black-and-white print.",
                 s["caption"],
             ),
             p("Point-estimate cross-check", s["h2"]),
             p(
-                f"Across {len(validation)} Stata quantities, the largest absolute Python-Stata "
-                "difference is 1.7844e-7, below the 1e-6 tolerance. This isolates uncertainty "
-                "differences from coefficient-construction errors.",
+                f"Across {len(validation)} quantities, the largest absolute difference between "
+                "Python and saved Stata point estimates is 0.00000017844. This is below the "
+                "0.000001 tolerance. The two implementations therefore give effectively the same "
+                "central estimates at the precision reported in the paper.",
                 s["body"],
             ),
-            p("Reconciliation, not overclaiming", s["h2"]),
+            p("Why some uncertainty estimates differ", s["h2"]),
             p(
-                "The reimplementation does not reproduce every printed digit of every standard error. "
-                "Potential sources include numerical details of the original Stata routines, null "
-                "imposition, and random-number implementation. The magnitudes and inference closely "
-                "track the published benchmark, but the result is labeled an accelerated "
-                "reimplementation rather than a completed original-code bootstrap.",
+                "The Python and published standard errors differ slightly. Different random-number "
+                "streams and numerical routines may contribute, but this project has not isolated "
+                "the exact source of each difference. One supplied-code behavior is retained: the "
+                "untreated-household asset coefficient is held fixed during resampling. This is "
+                "documented for reproducibility, not endorsed as the only valid choice. A completed "
+                "original-code Stata bootstrap would provide a stronger comparison.",
                 s["body"],
             ),
             PageBreak(),
@@ -575,7 +606,9 @@ def build_story() -> list[object]:
             timing_rows.append(
                 [
                     "First token" if model == "Actual start month" else "10% cutoff",
-                    variable,
+                    {"log weighted village households": "Log of weighted village size",
+                     "eligible share": "Eligible-household share",
+                     "high saturation": "High-saturation assignment"}[variable],
                     f"{float(row['coefficient']):.3f}",
                     f"{float(row['standard_error']):.3f}",
                     f"{float(row['p_value']):.3f}",
@@ -584,41 +617,59 @@ def build_story() -> list[object]:
     cell_lookup = {(int(row["radius_km"]), row["cell"]): int(row["village_count"]) for row in cells}
     story.extend(
         [
-            p("7. Independent extension: rollout and exposure support", s["h1"]),
+            p("7. Extension: timing and comparison groups", s["h1"]),
             p(
-                "The extension asks: <b>Do rollout timing and nearby-treatment exposure create "
-                "systematic selection or thin comparison cells that qualify the interpretation of "
-                "general-equilibrium spillovers?</b> It has two parts. First, actual start month is "
-                "regressed on pre-existing village scale, eligibility share, and high-saturation "
-                "assignment, with subcounty fixed effects and sublocation-clustered standard errors. "
-                "Second, villages are classified as direct only, direct plus indirect, pure control, "
-                "or spillover only at 2, 3, and 4 km.",
+                "<b>Did some types of village receive payments earlier?</b> The first check relates "
+                "the start month to village size, the share of eligible households, and high-saturation "
+                "assignment. It controls for average timing differences between subcounties, so the "
+                "comparison is within each subcounty. Standard errors allow errors to be correlated "
+                "within sublocations. Village size and eligibility shares use endline household "
+                "weights: this is a descriptive timing check, not a baseline balance test.",
+                s["body"],
+            ),
+            p(
+                "Start is measured in two ways: the first month with an initial KES 7,000 payment, "
+                "and the first month when cumulative initial payments reach 10% of the village's "
+                "total initial payments. Coefficients are in months; positive values indicate later starts.",
                 s["body"],
             ),
             course_table(timing_rows, [1.0 * inch, 2.55 * inch, 0.75 * inch, 0.75 * inch, 0.75 * inch], font_size=7.4),
             p(
-                "Table 2. Timing diagnostics, N = 328 treated villages and 80 sublocation clusters. "
-                "Subcounty fixed effects are included but omitted from the display.",
+                "Table 2. Timing diagnostics: 328 treated villages and 80 sublocation clusters. "
+                "Subcounty indicators are included. SEs are cluster-adjusted; p-values use a "
+                "two-sided normal approximation. The eligible share is measured from 0 to 1.",
                 s["caption"],
             ),
-            p("Result 1: no detected within-subcounty timing gradient", s["h2"]),
+            p("Timing result", s["h2"]),
             p(
-                "The coefficients on log weighted households, eligible share, and high saturation "
-                "are individually small relative to their standard errors in both timing definitions. "
-                "The subcounty fixed effects are large, consistent with phased geographic rollout. "
-                "These are descriptive correlations and do not convert rollout timing into an outcome estimate.",
+                "None of the three characteristics has a statistically detectable association with "
+                "start month in either specification. For example, high-saturation assignment is "
+                "associated with a 0.168-month later first payment (SE 0.286; p = 0.557). This is "
+                "consistent with little association in these data, but a nonsignificant result "
+                "does not establish that actual payment timing is random.",
                 s["body"],
             ),
-            p("Result 2: binary exposure comparisons become unsupported", s["h2"]),
+            p("Which comparison groups exist?", s["h2"]),
             p(
-                f"At 2 km there are {cell_lookup[(2, 'direct only')]} direct-only, "
-                f"{cell_lookup[(2, 'direct+indirect')]} direct-plus-indirect, "
-                f"{cell_lookup[(2, 'pure control')]} pure-control, and "
-                f"{cell_lookup[(2, 'spillover only')]} spillover-only villages. At 3 km and 4 km, "
-                "the direct-only and pure-control cells vanish. Hence a simple four-cell comparison "
-                "would be unstable; the paper's continuous exposure design is more appropriate.",
+                "The second check separates own-village treatment from the presence of at least "
+                "one other treated village nearby. The labels describe assignment and proximity; "
+                "they do not prove that an economic spillover occurred.",
                 s["body"],
             ),
+            course_table(
+                [["Own village", "Treated neighbor?", "2 km", "3 km", "4 km"]] + [
+                    [own, nearby] + [cell_lookup.get((radius, cell), 0) for radius in (2, 3, 4)]
+                    for own, nearby, cell in (
+                        ("Treated", "No", "direct only"),
+                        ("Treated", "Yes", "direct+indirect"),
+                        ("Control", "No", "pure control"),
+                        ("Control", "Yes", "spillover only"),
+                    )
+                ],
+                [1.5 * inch, 2.3 * inch, 1.0 * inch, 1.0 * inch, 1.0 * inch],
+                font_size=8,
+            ),
+            p("Table 3. Village counts. Each radius includes the same 653 villages; the focal village is excluded from its own neighbor count.", s["caption"]),
             PageBreak(),
         ]
     )
@@ -631,38 +682,33 @@ def build_story() -> list[object]:
     neighbor_2km = next(row for row in neighbors if int(row["radius_km"]) == 2)
     story.extend(
         [
-            p("8. Extension evidence and implications", s["h1"]),
-            Image(str(FIGURE_DIR / "extension_exposure_cells.png"), width=6.9 * inch, height=4.19 * inch),
+            p("8. Why nearby treatment matters", s["h1"]),
+            report_figure("extension_exposure_cells.png"),
             p(
-                "Figure 2. Simplified village exposure cells at 2, 3, and 4 km. Each village appears "
-                "once within a treated or control bar component for each radius.",
+                "Figure 2. Treatment and nearby-treatment groups. Each bar contains all 653 villages. "
+                "The very small groups retain their true scale; exact counts are in Table 3 and below the chart.",
                 s["caption"],
             ),
-            p("Economic and design interpretation", s["h2"]),
+            p("Almost every village has a treated neighbor", s["h2"]),
             p(
-                f"Within 2 km, villages have on average {float(neighbor_2km['mean_nearby_villages']):.2f} "
-                f"neighbors (median {float(neighbor_2km['median_nearby_villages']):.0f}; maximum "
-                f"{int(neighbor_2km['max_nearby_villages'])}). Two villages have no neighbors and "
-                f"five have no treated neighbor. Direct-only and pure-control villages represent only "
+                f"At 2 km, villages have an average of {float(neighbor_2km['mean_nearby_villages']):.2f} "
+                "neighbors. Only one treated village and four control villages have no treated "
+                "neighbor. These two groups account for just "
                 f"{100 * hh_2km.get('direct only', 0) / total_hh:.1f}% and "
                 f"{100 * hh_2km.get('pure control', 0) / total_hh:.1f}% of weighted households. "
-                "That lack of support is not evidence against spillovers; it is evidence that binary "
-                "cell means would be a poor substitute for continuous nearby-transfer exposure.",
+                "At 3 km and 4 km, every village has a treated neighbor.",
                 s["body"],
             ),
             p(
-                "The extension therefore strengthens interpretation in a limited but useful way. "
-                "Observed timing does not show an obvious within-subcounty association with the three "
-                "tested village characteristics, while the geometry explains why instruments based on "
-                "randomized saturation and continuous exposure are needed. It also warns against "
-                "claiming clean direct-only versus pure-control contrasts at broader radii.",
+                "An average based on one or four villages would be sensitive to those particular "
+                "villages. Empty groups cannot be compared at all. This explains the difficulty of "
+                "a simple four-group analysis and the value of examining <b>how much</b> cash was "
+                "transferred nearby. The counts do not, by themselves, validate the paper's instruments "
+                "or show that spillovers caused an outcome change.",
                 s["body"],
             ),
-            p("Extension limitations", s["h2"]),
-            bullet("Monthly timing cannot recover exact weekly payment order.", s["body"]),
-            bullet("The exposure cells reduce a continuous dose to any-versus-none categories.", s["body"]),
-            bullet("Timing regressions cover three observed characteristics, not every source of selection.", s["body"]),
-            bullet("No new causal outcome coefficient is estimated in this extension.", s["body"]),
+            p("Limits of the extension", s["h2"]),
+            p("Payment timing is monthly, the regressions cover only three characteristics, and the exposure groups reduce nearby transfers to yes/no categories. These checks describe the data and comparison groups; they do not estimate a new causal effect.", s["body"]),
             PageBreak(),
         ]
     )
@@ -671,40 +717,44 @@ def build_story() -> list[object]:
         [
             p("9. Reproducibility package", s["h1"]),
             p(
-                "The public repository preserves the upstream Stata/R workflow and adds a course-facing "
-                "Python entry point. From an authorized local copy of the documented inputs, the intended "
-                "command is <b>python3 code/run_all.py --target all</b>. Explicit path "
-                "overrides support inputs stored outside the repository. A check-only mode validates the "
-                "committed package without requiring restricted data.",
+                "The repository keeps the original Stata/R analysis code and adds a Python workflow "
+                "for this project's results. Install the dependencies in requirements.txt and place "
+                "the seven authorized input files at the paths listed in config/input_manifest.json. "
+                "Then run <b>python3 code/run_all.py --target all</b> from the repository root to "
+                "regenerate the tables and figures. Input paths can also be supplied explicitly.",
                 s["body"],
             ),
             p("Package map", s["h2"]),
             course_table(
                 [
                     ["Path", "Purpose"],
-                    ["code/run_all.py", "Single course entry point; preflight, core, extension, output validation"],
-                    ["code/table5_multiplier_bootstrap.py", "Portable Table V point estimates and 2,000-draw accelerator"],
-                    ["code/extension_timing_exposure.py", "Timing regression and exposure-support diagnostics"],
-                    ["code/render_figures.py", "Figures generated only from aggregate CSV outputs"],
+                    ["code/run_all.py", "Run the core and extension; check expected inputs and outputs"],
+                    ["code/table5_multiplier_bootstrap.py", "Table V point estimates and 2,000-draw Python bootstrap"],
+                    ["code/extension_timing_exposure.py", "Timing regression, village-group counts, and exposure chart"],
+                    ["code/render_figures.py", "Table V comparison chart from summary CSVs"],
+                    ["code/build_report.py", "Build report.pdf from the summary tables and figures; requires ReportLab"],
                     ["config/", "Project status, input contract, and published benchmarks"],
                     ["data/raw/ and data/processed/", "README access instructions only; inputs remain untracked"],
-                    ["outputs/tables/ and outputs/figures/", "Disclosure-reviewed canonical aggregate artifacts"],
-                    ["skills/SKILL.md", "Reusable execution, checks, privacy invariants, and troubleshooting"],
+                    ["outputs/tables/ and outputs/figures/", "Summary results used by this report"],
+                    ["skills/SKILL.md", "Reusable instructions for running and checking the project"],
                     ["AI_USE_DISCLOSURE.md", "Stage-by-stage AI assistance and human verification"],
                 ],
                 [2.3 * inch, 4.5 * inch],
                 font_size=7.6,
             ),
-            p("Fresh-run controls", s["h2"]),
-            bullet("Resolve paths from the repository root; no machine-local path is committed.", s["body"]),
-            bullet("Fail before analysis if inputs, required variables, or output schemas are missing.", s["body"]),
-            bullet("Use a fixed seed and 2,000 draws in paper mode; smoke results cannot replace canonical outputs.", s["body"]),
-            bullet("Reject GPS/coordinate files and keep legacy public analysis at runGPS = 0.", s["body"]),
-            bullet("Run the exact-path privacy auditor before any push.", s["body"]),
+            p("How to check the package", s["h2"]),
             p(
-                "The committed results were regenerated from the existing authorized local analysis "
-                "files and compared with the paper. A third party still needs lawful access to the "
-                "documented inputs to reproduce the numerical run from scratch.",
+                "Run <b>python3 code/run_all.py --check-only</b> to check the public files without "
+                "estimating the models. The full computation fixes the bootstrap at 2,000 draws "
+                "and seed 12345. The release validator checks that only the approved summary "
+                "outputs are included. It does not replace numerical or visual review. The PDF "
+                "is built separately using <b>python3 code/build_report.py</b>.",
+                s["body"],
+            ),
+            p(
+                "The full project workflow completed using the existing local analysis files. "
+                "Reproducing the numbers on another machine still requires authorized access to "
+                "those inputs. A fresh-machine run of the full original article has not been completed.",
                 s["callout"],
             ),
             PageBreak(),
@@ -715,25 +765,25 @@ def build_story() -> list[object]:
         [
             p("10. Validation, limitations, and AI use", s["h1"]),
             p("Validation completed", s["h2"]),
-            bullet("Exact paper and appendix identities were verified from contents; key exhibits were rendered.", s["body"]),
-            bullet("The core workflow generated exactly 2,000 bootstrap draws with seed 12345; the committed summary contains the 12 canonical Table V rows.", s["body"]),
-            bullet("All 11 Python point estimates pass the 1e-6 Stata-difference tolerance.", s["body"]),
-            bullet("Extension tables were freshly regenerated and match prior aggregate results.", s["body"]),
-            bullet("Canonical CSV schemas, figure dimensions, PDF extraction, and rendered pages were checked.", s["body"]),
+            bullet("The source paper and appendix were checked against their contents, including Table V and the experimental design.", s["body"]),
+            bullet("The core computation used 2,000 draws and seed 12345. Its summary has 11 estimate rows and one joint-tail row.", s["body"]),
+            bullet("All 11 Python point estimates agree with the saved Stata estimates within 0.000001.", s["body"]),
+            bullet("The timing and village-group results agree with the earlier local analysis. The final editorial revision leaves the numerical CSVs unchanged.", s["body"]),
+            bullet("Tables, charts, and the rendered PDF were checked for numerical consistency, readable labels, and page layout.", s["body"]),
             p("Substantive limitations", s["h2"]),
-            bullet("Alternative-paper approval remains pending; this is a submission candidate, not evidence of approval.", s["body"]),
-            bullet("The package targets Table V plus one robustness extension, not all paper exhibits or the paper's Figure 1.", s["body"]),
-            bullet("Restricted spatial-HAC/GPS inference is not reproduced in the public package.", s["body"]),
-            bullet("A direct 2,000-draw Stata loop was incomplete; the final results use the validated Python matrix implementation.", s["body"]),
-            bullet("Early quarterly responses are imprecise because survey timing begins well after rollout for some outcomes.", s["body"]),
+            bullet("The direct 2,000-draw Stata loop remained incomplete. Point-estimate agreement does not establish exact equivalence of every bootstrap step.", s["body"]),
+            bullet("The supplied code holds one untreated-household asset coefficient fixed during resampling. This behavior is retained and should be tested in further work.", s["body"]),
+            bullet("Household surveys begin about nine months after rollout and enterprise surveys about 18 months after rollout. Early quarterly responses are therefore less precisely estimated.", s["body"]),
+            bullet("The multiplier depends on the paper's accounting and horizon. Imports, asset depreciation, and activity outside the study area limit its interpretation as a full welfare or national-GDP effect.", s["body"]),
+            bullet("The village-size and eligibility covariates use endline weights, and the exposure groups simplify continuous transfer amounts. Neither extension check establishes a new causal effect.", s["body"]),
+            bullet("Restricted-GPS analyses and other article exhibits are outside the project scope. Alternative-paper approval remains pending.", s["body"]),
             p("AI use and human responsibility", s["h2"]),
             p(
-                "AI assisted with requirement extraction, repository auditing, portability edits, "
-                "table/figure generation, report drafting, and validation planning. Every empirical "
-                "claim in this report was checked against the named paper, appendix, code, logs, or "
-                "aggregate output. Suggestions that would have mislabeled three-draw inference, "
-                "claimed a complete Stata run, or treated a third-party reanalysis as the student's "
-                "own extension were rejected. Full details appear in AI_USE_DISCLOSURE.md.",
+                "OpenAI Codex assisted with reading the instructions, organizing the repository, "
+                "implementing and checking Python code, drafting the report, and revising its text "
+                "and figures. Source material and machine-generated results provide the evidence. "
+                "The student remains responsible for reviewing the methods, explaining the results, "
+                "and deciding what to submit. AI_USE_DISCLOSURE.md gives the full account.",
                 s["body"],
             ),
             PageBreak(),
@@ -744,27 +794,27 @@ def build_story() -> list[object]:
         [
             p("11. Conclusion", s["h1"]),
             p(
-                "The selected replication supports the paper's headline result in a carefully bounded "
-                "sense. Table V point estimates are reproduced to numerical precision, and a validated "
-                "2,000-draw wild-cluster accelerator closely reconciles the reported uncertainty. The "
-                "expenditure multiplier is about 2.58, the income multiplier about 2.47, and their "
-                "average about 2.52. The evidence is strong that the local response is positive; the "
-                "one-sided evidence that the multiplier exceeds one is suggestive rather than decisive.",
+                "The replication gives an expenditure multiplier of 2.58 and an income multiplier "
+                "of 2.47, matching the published figures after rounding. They suggest that one dollar "
+                "transferred generated about USD 2.50 of additional local economic activity over the "
+                "measured period. The estimates remain uncertain: the results support a positive "
+                "response more clearly than they establish a multiplier above one.",
                 s["body"],
             ),
             p(
-                "The rollout/exposure extension adds a design insight. Within subcounty, start timing is "
-                "not detectably associated with the tested village characteristics, but simplified "
-                "direct-only and pure-control exposure cells are extremely thin and disappear at broader "
-                "radii. This supports the paper's use of randomized saturation and continuous nearby "
-                "transfer exposure while warning against unsupported binary comparisons.",
+                "The extension shows why a simple treated-versus-control comparison can be misleading "
+                "in this setting. Almost every village has a treated neighbor. At 2 km, only one "
+                "treated village and four control villages have no treated neighbor; at 3 km and "
+                "4 km, none do. Comparisons built around these tiny groups would be unreliable. "
+                "The counts help explain the paper's use of nearby transfer amounts, while leaving "
+                "the causal effect of those transfers to the original IV design.",
                 s["body"],
             ),
             p(
-                "The main remaining decision is administrative rather than computational: instructor "
-                "approval is required because Egger et al. is an alternative paper. Subject to that "
-                "approval, the repository now matches the requested submission structure and states its "
-                "replication boundary honestly.",
+                "The contribution is a transparent check of Table V and a practical diagnosis of "
+                "the comparison groups. The remaining substantive work is to compare a completed "
+                "Stata bootstrap and test the retained resampling choice. Instructor approval is "
+                "also required before using this alternative paper for the final submission.",
                 s["callout"],
             ),
             p("References", s["h2"]),
@@ -775,8 +825,10 @@ def build_story() -> list[object]:
                 s["body"],
             ),
             p(
-                "Egger et al. Complete Appendices A-J (version dated 7 June 2022), especially "
-                "Appendix A (design), Appendix C (MPC), and Appendix D (multiplier robustness).",
+                "Egger et al. Complete Appendices A-J (7 June 2022): Appendix A for the design "
+                "and Appendix D for multiplier sensitivity. Main-paper references: Section 2 "
+                "for randomization, Section 3.8 and Equation (7) for dynamics, and Table V "
+                "and Section 5 for the multiplier and its limitations.",
                 s["body"],
             ),
             p("Rubric map", s["h2"]),

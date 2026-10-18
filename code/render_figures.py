@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -17,11 +18,19 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def render_table5(table_dir: Path, figure_dir: Path) -> None:
+def render_table5_comparison(
+    comparison: pd.DataFrame,
+    output_path: Path,
+    replication_label: str = "2,000-draw reimplementation",
+) -> None:
+    """Render the shared monochrome comparison and atomically replace its PNG."""
+    import matplotlib
+
+    # The CLI and core pipeline must use the same export backend.
+    matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    data = pd.read_csv(table_dir / "table5_paper_comparison.csv")
-    data = data[data["published_estimate"].notna()].copy()
+    data = comparison[comparison["published_estimate"].notna()].copy()
     labels = {
         "Expenditure multiplier": "Expenditure multiplier",
         "Household non-durable expenditure": "Nondurable expenditure",
@@ -39,42 +48,63 @@ def render_table5(table_dir: Path, figure_dir: Path) -> None:
     data = data.iloc[::-1].reset_index(drop=True)
     y = np.arange(len(data), dtype=float)
 
-    figure, axis = plt.subplots(figsize=(9.2, 6.0))
+    figure, axis = plt.subplots(figsize=(9.19, 6.2))
     axis.errorbar(
         data["published_estimate"],
         y + 0.12,
         xerr=data["published_se"],
         fmt="o",
-        color="#7b8794",
-        ecolor="#b8c2cc",
-        capsize=2,
+        color="0.35",
+        ecolor="0.55",
+        markerfacecolor="white",
+        markeredgecolor="0.25",
+        markersize=5.5,
+        elinewidth=1.0,
+        capsize=3,
         label="Published Table V",
     )
     axis.errorbar(
         data["replicated_estimate"],
         y - 0.12,
         xerr=data["replicated_se"],
-        fmt="o",
-        color="#17324d",
-        ecolor="#4c82ad",
-        capsize=2,
-        label="2,000-draw reimplementation",
+        fmt="D",
+        color="black",
+        ecolor="black",
+        markerfacecolor="black",
+        markersize=4.5,
+        elinewidth=1.0,
+        capsize=3,
+        label=replication_label,
     )
-    axis.axvline(0, color="#8795a1", linewidth=0.8)
+    axis.axvline(0, color="0.45", linewidth=0.8)
     axis.set_yticks(y, data["label"])
-    axis.set_xlabel("Multiplier component estimate (± one standard error)")
-    axis.set_title("Table V point estimates and uncertainty closely track the paper", loc="left", weight="bold")
-    axis.grid(axis="x", color="#d9e2ec", linewidth=0.8)
+    axis.set_xlabel("Estimate (bars show ± one standard error)", labelpad=9)
+    axis.set_title("Published and replicated multiplier estimates", loc="left", weight="bold", pad=13)
+    axis.grid(axis="x", color="0.88", linewidth=0.7)
     axis.set_axisbelow(True)
-    axis.legend(
+    axis.spines[["top", "right"]].set_visible(False)
+    figure.legend(
         frameon=False,
-        loc="upper center",
-        bbox_to_anchor=(0.5, -0.12),
+        loc="lower center",
+        bbox_to_anchor=(0.62, 0.015),
         ncol=2,
+        fontsize=9,
     )
-    figure.tight_layout()
-    figure.savefig(figure_dir / "table5_multiplier_comparison.png", dpi=220, facecolor="white")
-    plt.close(figure)
+    figure.tight_layout(rect=(0, 0.09, 1, 1))
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(suffix=".png", dir=output_path.parent, delete=False) as handle:
+        temporary = Path(handle.name)
+    try:
+        figure.savefig(temporary, dpi=220, facecolor="white")
+        temporary.replace(output_path)
+    finally:
+        plt.close(figure)
+        temporary.unlink(missing_ok=True)
+
+
+def render_table5(table_dir: Path, figure_dir: Path) -> None:
+    comparison = pd.read_csv(table_dir / "table5_paper_comparison.csv")
+    render_table5_comparison(comparison, figure_dir / "table5_multiplier_comparison.png")
 
 
 def main() -> int:
