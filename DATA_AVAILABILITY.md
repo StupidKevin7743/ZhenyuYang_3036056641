@@ -1,10 +1,17 @@
 # Data Availability and Confidentiality
 
-## No data are distributed
+## No research data are distributed
 
-This repository contains code and documentation only. It does not distribute research microdata, geographic coordinates, source archives, intermediate datasets, logs, or generated results.
+This repository distributes no research microdata, geographic coordinates,
+source archives, intermediate datasets, bootstrap draw-level files, or logs.
+It does include a narrowly allowlisted set of disclosure-reviewed aggregate
+tables and figures used in the course report. Those aggregate artifacts contain
+no record identifiers or coordinates and are enumerated in the root
+`README.md`.
 
-The empty `rawdata/` and `data/` directories exist solely to document the directory layout expected by the programs. Their contents are ignored by version control, apart from the local explanatory `README.md` files.
+The `rawdata/`, `data/raw/`, and `data/processed/` directories exist to
+document the layout expected by the programs. Their research inputs are ignored
+by version control; only explanatory `README.md` files are versioned.
 
 ## Authorized source
 
@@ -19,13 +26,18 @@ Access, use, and redistribution are governed by the provider’s current terms a
 
 After obtaining authorized, disclosure-reviewed inputs:
 
-1. Put provider-supplied analysis files in `data/`.
-2. Put only auxiliary inputs read directly by analysis programs in `rawdata/`.
+1. Put provider-supplied course analysis files in `data/processed/`.
+2. Put only authorized auxiliary source inputs in `data/raw/`; legacy programs
+   may additionally expect the documented root-level `data/` and `rawdata/`
+   layout.
 3. Preserve the filenames and relative paths referenced by the Stata programs.
 4. Keep archives outside the repository or delete local copies after extraction if permitted by the provider’s terms.
 5. Before pushing, inspect `git status --short` and `git diff --cached --name-only`, then run the release validator against a clean, data-free release tree.
 
-The legacy analysis master creates intermediates below the root-level `temp/` directory. Curated wrappers create section-specific intermediates below `outputs/<section>/temp/`. All generated files remain local and must not be committed.
+The legacy analysis master creates intermediates below the root-level `temp/`
+directory. Curated wrappers may create local staging content. Only the exact
+aggregate files listed in the root `README.md` may be committed; every other
+generated file remains local.
 
 ## Why construction code is not included
 

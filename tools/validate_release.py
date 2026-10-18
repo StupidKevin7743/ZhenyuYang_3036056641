@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail closed when the public replication tree is not safe to release.
+"""Fail closed when the public course-replication tree is not safe to release.
 
 This script intentionally uses only the Python standard library.  Run it from
 any directory; the repository root is derived from this file's location.
@@ -23,6 +23,38 @@ from typing import Iterable
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MAX_FILE_BYTES = 10 * 1024 * 1024
 ALLOW_LOCAL_REFERENCE = "release-audit: allow-local-reference"
+
+# The course repository adds only these disclosure-reviewed aggregate artifacts
+# to the original code-only release.  Every other data/result/binary path stays
+# forbidden.  Keeping an exact path allowlist prevents a broad exception from
+# accidentally publishing microdata, logs, coordinates, or ad-hoc results.
+COURSE_ALLOWED_TEXT_ARTIFACTS = {
+    "config/input_manifest.json",
+    "config/project.json",
+    "config/published_benchmarks.csv",
+    "data/processed/README.md",
+    "data/raw/README.md",
+    "outputs/tables/extension_exposure_cells.csv",
+    "outputs/tables/extension_exposure_households.csv",
+    "outputs/tables/extension_neighbor_summary.csv",
+    "outputs/tables/extension_timing_regression.csv",
+    "outputs/tables/table5_2000_bootstrap_summary.csv",
+    "outputs/tables/table5_paper_comparison.csv",
+    "outputs/tables/table5_point_validation.csv",
+}
+COURSE_ALLOWED_BINARY_ARTIFACTS = {
+    "outputs/figures/extension_exposure_cells.png",
+    "outputs/figures/table5_multiplier_comparison.png",
+    "report.pdf",
+}
+COURSE_BINARY_MAGIC = {
+    "outputs/figures/extension_exposure_cells.png": b"\x89PNG\r\n\x1a\n",
+    "outputs/figures/table5_multiplier_comparison.png": b"\x89PNG\r\n\x1a\n",
+    "report.pdf": b"%PDF-",
+}
+COURSE_ALLOWED_ARTIFACTS = (
+    COURSE_ALLOWED_TEXT_ARTIFACTS | COURSE_ALLOWED_BINARY_ARTIFACTS
+)
 
 # Formats that can carry observations, identifiers, rendered results, or an
 # opaque collection of files.  Comparisons are case-insensitive.
@@ -145,6 +177,30 @@ REQUIRED_FILES = {
     "rawdata/README.md",
     "outputs/README.md",
     "run_all.do",
+    "report.pdf",
+    "AI_USE_DISCLOSURE.md",
+    "CONTRIBUTIONS.md",
+    "code/extension_timing_exposure.py",
+    "code/build_report.py",
+    "code/render_figures.py",
+    "code/run_all.py",
+    "code/table5_multiplier_bootstrap.py",
+    "config/input_manifest.json",
+    "config/project.json",
+    "config/published_benchmarks.csv",
+    "data/processed/README.md",
+    "data/raw/README.md",
+    "outputs/figures/extension_exposure_cells.png",
+    "outputs/figures/table5_multiplier_comparison.png",
+    "outputs/tables/extension_exposure_cells.csv",
+    "outputs/tables/extension_exposure_households.csv",
+    "outputs/tables/extension_neighbor_summary.csv",
+    "outputs/tables/extension_timing_regression.csv",
+    "outputs/tables/table5_2000_bootstrap_summary.csv",
+    "outputs/tables/table5_paper_comparison.csv",
+    "outputs/tables/table5_point_validation.csv",
+    "skills/SKILL.md",
+    "tools/validate_course_submission.py",
     "ge_analysis.do",
     "ge_analysis_RFigures.R",
     "do/GE_global_setup.do",
@@ -292,16 +348,26 @@ def inspect_file(path: Path) -> list[Finding]:
         or lower_name.startswith(".env.") and lower_name != ".env.example"
     )
     if (
+        relative not in COURSE_ALLOWED_ARTIFACTS
+        and (
         lower_name in FORBIDDEN_FILENAMES
         or lower_suffix in FORBIDDEN_SUFFIXES
         or forbidden_environment_file
+        )
     ):
         findings.append(Finding(relative, "forbidden release file type"))
 
-    if any(part.lower() in FORBIDDEN_DIRECTORY_NAMES for part in relative_path.parts[:-1]):
+    if (
+        relative not in COURSE_ALLOWED_ARTIFACTS
+        and any(part.lower() in FORBIDDEN_DIRECTORY_NAMES for part in relative_path.parts[:-1])
+    ):
         findings.append(Finding(relative, "file is inside a generated-output directory"))
 
-    if relative_path.parts and relative_path.parts[0].lower() in PLACEHOLDER_DIRECTORIES:
+    if (
+        relative not in COURSE_ALLOWED_ARTIFACTS
+        and relative_path.parts
+        and relative_path.parts[0].lower() in PLACEHOLDER_DIRECTORIES
+    ):
         if len(relative_path.parts) != 2 or path.name not in PLACEHOLDER_FILES:
             findings.append(
                 Finding(relative, "only README.md is allowed in this placeholder directory")
@@ -317,6 +383,18 @@ def inspect_file(path: Path) -> list[Finding]:
         findings.append(
             Finding(relative, f"file is {size:,} bytes; limit is {MAX_FILE_BYTES:,} bytes")
         )
+
+    if relative in COURSE_ALLOWED_BINARY_ARTIFACTS:
+        try:
+            with path.open("rb") as handle:
+                prefix = handle.read(8)
+        except OSError as error:
+            findings.append(Finding(relative, f"could not read binary course artifact: {error}"))
+            return findings
+        expected_magic = COURSE_BINARY_MAGIC[relative]
+        if not prefix.startswith(expected_magic):
+            findings.append(Finding(relative, "binary course artifact has an unexpected file signature"))
+        return findings
 
     if not is_probably_text(path):
         findings.append(Finding(relative, "binary content is not allowed in this code-only release"))

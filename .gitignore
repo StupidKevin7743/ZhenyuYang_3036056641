@@ -1,4 +1,5 @@
-# This repository is intentionally code-only. These rules are defense in depth;
+# This repository contains code plus an exact allowlist of disclosure-reviewed
+# aggregate course outputs. These rules are defense in depth;
 # tools/validate_release.py is the authoritative pre-publication check.
 
 # Research data and generated artifacts (at any depth)
@@ -102,6 +103,32 @@
 !/rawdata/README.md
 /outputs/*
 !/outputs/README.md
+
+# ECON6067 course deliverables: only these aggregate/public artifacts are
+# intentionally versioned. Raw and processed microdata remain excluded.
+!/report.pdf
+!/config/
+!/config/project.json
+!/config/input_manifest.json
+!/config/published_benchmarks.csv
+!/data/raw/
+!/data/raw/README.md
+!/data/processed/
+!/data/processed/README.md
+!/outputs/tables/
+!/outputs/tables/table5_2000_bootstrap_summary.csv
+!/outputs/tables/table5_paper_comparison.csv
+!/outputs/tables/table5_point_validation.csv
+!/outputs/tables/extension_timing_regression.csv
+!/outputs/tables/extension_exposure_cells.csv
+!/outputs/tables/extension_exposure_households.csv
+!/outputs/tables/extension_neighbor_summary.csv
+!/outputs/figures/
+!/outputs/figures/table5_multiplier_comparison.png
+!/outputs/figures/extension_exposure_cells.png
+
+# Local run staging is never publishable.
+/.runtime/
 
 # Credentials and machine-local configuration
 **/.env

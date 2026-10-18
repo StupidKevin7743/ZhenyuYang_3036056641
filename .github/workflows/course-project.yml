@@ -1,0 +1,47 @@
+name: Course project checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-course-project:
+    name: Validate course structure and reproducibility contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install course-runner dependencies
+        run: python3 -m pip install -r requirements.txt
+
+      - name: Compile project Python
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          for folder in (Path("code"), Path("tools")):
+              for path in sorted(folder.glob("*.py")):
+                  compile(path.read_text(encoding="utf-8"), str(path), "exec")
+          PY
+
+      - name: Run data-free workflow preflight
+        run: python3 code/run_all.py --check-only
+
+      - name: Validate course submission structure
+        run: python3 tools/validate_course_submission.py
+
+      - name: Run privacy and release audit
+        run: python3 tools/validate_release.py

@@ -1,7 +1,15 @@
-# Local Generated Outputs
+# Disclosure-Reviewed Course Outputs
 
-This directory is intentionally empty in version control.
+This course repository versions only the aggregate tables and figures listed in
+the root `README.md`. They were reviewed for identifiers, coordinates,
+record-level observations, machine-local paths, and credentials before being
+added.
 
-Section-specific wrappers write tables, figures, temporary files, and logs below this directory. Generated content is ignored because it can be large, environment-dependent, or derived from restricted inputs.
+The release audit permits those files by exact path. All other generated
+content remains ignored and forbidden, including logs, temporary datasets,
+bootstrap draw-level files, ad hoc exports, and unreviewed figures. A new or
+renamed output must not be committed until both its disclosure risk and the
+exact-path allowlist have been reviewed.
 
-Review every artifact for disclosure risk before sharing it. Never commit logs or record-level output. See [../REPLICATION.md](../REPLICATION.md) and [../DATA_AVAILABILITY.md](../DATA_AVAILABILITY.md).
+See [../REPLICATION.md](../REPLICATION.md) and
+[../DATA_AVAILABILITY.md](../DATA_AVAILABILITY.md).
